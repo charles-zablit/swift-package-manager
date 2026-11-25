@@ -6,6 +6,11 @@
 # See http://swift.org/LICENSE.txt for license information
 # See http://swift.org/CONTRIBUTORS.txt for Swift project authors
 
+# Without library evolution, `@_implementationOnly` imports are only safe when
+# the compiler checks that their types stay out of the layout of the module.
+if(CMAKE_Swift_COMPILER_VERSION VERSION_GREATER_EQUAL 6.4)
+  add_compile_options("$<$<COMPILE_LANGUAGE:Swift>:SHELL:-enable-experimental-feature CheckImplementationOnly>")
+endif()
 add_compile_definitions(USE_IMPL_ONLY_IMPORTS)
 
 add_subdirectory(_AsyncFileSystem)
