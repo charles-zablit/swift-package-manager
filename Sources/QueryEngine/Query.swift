@@ -32,7 +32,8 @@ extension CachingQuery {
 // set up with CMake when Swift 5.9 is available for all CI jobs) and have to stick to `Encodable` for now.
 final class HashEncoder<Hash: HashFunction>: Encoder {
     enum Error: Swift.Error {
-        case noCacheKeyConformance(Encodable.Type)
+        /// The name of the type that does not conform to `CacheKey`.
+        case noCacheKeyConformance(String)
     }
 
     var codingPath: [any CodingKey]
@@ -137,7 +138,7 @@ extension HashEncoder: SingleValueEncodingContainer {
         }
 
         guard value is CacheKey else {
-            throw Error.noCacheKeyConformance(T.self)
+            throw Error.noCacheKeyConformance(String(reflecting: T.self))
         }
 
         try String(describing: T.self).encode(to: self)
@@ -254,7 +255,7 @@ extension HashEncoder {
                 return
             }
             guard value is CacheKey else {
-                throw Error.noCacheKeyConformance(T.self)
+                throw Error.noCacheKeyConformance(String(reflecting: T.self))
             }
 
             try String(reflecting: T.self).encode(to: self.encoder)
