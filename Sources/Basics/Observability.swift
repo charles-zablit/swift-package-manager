@@ -684,14 +684,14 @@ extension ObservabilityMetadata {
 
 // MARK: - Compatibility with TSC Diagnostics APIs
 
-@available(*, deprecated, message: "temporary for transition TSCBasic.Diagnostic -> SwiftDriver.Diagnostic")
+// SwiftDriver reports TSCBasic diagnostics, so the build plan still needs these.
+
 extension ObservabilityScope {
     public func makeDiagnosticsHandler() -> (TSCBasic.Diagnostic) -> Void {
         { Diagnostic($0).map { self.diagnosticsHandler.handleDiagnostic(scope: self, diagnostic: $0) } }
     }
 }
 
-@available(*, deprecated, message: "temporary for transition TSCBasic.Diagnostic -> SwiftDriver.Diagnostic")
 extension Diagnostic {
     init?(_ diagnostic: TSCBasic.Diagnostic) {
         var metadata = ObservabilityMetadata()
@@ -715,7 +715,6 @@ extension Diagnostic {
     }
 }
 
-@available(*, deprecated, message: "temporary for transition TSCBasic.Diagnostic -> SwiftDriver.Diagnostic")
 extension ObservabilityMetadata {
     public var legacyDiagnosticLocation: DiagnosticLocationWrapper? {
         get {
@@ -743,7 +742,6 @@ extension ObservabilityMetadata {
     }
 }
 
-@available(*, deprecated, message: "temporary for transition TSCBasic.Diagnostic -> SwiftDriver.Diagnostic")
 extension ObservabilityMetadata {
     var legacyDiagnosticData: DiagnosticDataWrapper? {
         get {
