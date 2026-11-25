@@ -150,7 +150,7 @@ public final class XcodeBuildSystem: SPMBuildCore.BuildSystem {
                 continue
             }
 
-            let swiftSpec = NSArray(contentsOfFile: swiftSpecPath.pathString)
+            let swiftSpec = try? NSArray(contentsOf: swiftSpecPath.asURL, error: ())
             let compilerSpec = swiftSpec?.compactMap { $0 as? NSDictionary }.first {
                 if let identifier = $0["Identifier"] as? String {
                     identifier == "com.apple.xcode.tools.swift.compiler"
