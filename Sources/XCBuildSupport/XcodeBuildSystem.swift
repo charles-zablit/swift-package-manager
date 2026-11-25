@@ -228,11 +228,11 @@ public final class XcodeBuildSystem: SPMBuildCore.BuildSystem {
         }
 
         let delegate = createBuildDelegate()
-        var hasStdout = false
-        var stdoutBuffer: [UInt8] = []
-        var stderrBuffer: [UInt8] = []
+        let hasStdout = ThreadSafeBox(false)
+        let stdoutBuffer = ThreadSafeArrayStore<UInt8>()
+        let stderrBuffer = ThreadSafeArrayStore<UInt8>()
         let redirection: AsyncProcess.OutputRedirection = .stream(stdout: { bytes in
-            hasStdout = hasStdout || !bytes.isEmpty
+            hasStdout.mutate { $0 = $0 || !bytes.isEmpty }
             delegate.parse(bytes: bytes)
 
             if !delegate.didParseAnyOutput {
@@ -260,13 +260,14 @@ public final class XcodeBuildSystem: SPMBuildCore.BuildSystem {
         }
 
         guard result.exitStatus == .terminated(code: 0) else {
-            if hasStdout {
+            if hasStdout.get() {
                 if !delegate.didParseAnyOutput {
-                    self.observabilityScope.emit(error: String(decoding: stdoutBuffer, as: UTF8.self))
+                    self.observabilityScope.emit(error: String(decoding: stdoutBuffer.get(), as: UTF8.self))
                 }
             } else {
-                if !stderrBuffer.isEmpty {
-                    self.observabilityScope.emit(error: String(decoding: stderrBuffer, as: UTF8.self))
+                let stderrBytes = stderrBuffer.get()
+                if !stderrBytes.isEmpty {
+                    self.observabilityScope.emit(error: String(decoding: stderrBytes, as: UTF8.self))
                 } else {
                     self.observabilityScope.emit(error: "Unknown error: stdout and stderr are empty")
                 }

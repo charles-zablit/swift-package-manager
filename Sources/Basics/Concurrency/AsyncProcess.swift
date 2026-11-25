@@ -503,11 +503,8 @@ package final class AsyncProcess {
 
         let group = DispatchGroup()
 
-        var stdout: [UInt8] = []
-        let stdoutLock = NSLock()
-
-        var stderr: [UInt8] = []
-        let stderrLock = NSLock()
+        let stdout = ThreadSafeArrayStore<UInt8>()
+        let stderr = ThreadSafeArrayStore<UInt8>()
 
         if self.outputRedirection.redirectsOutput {
             let stdoutPipe = Pipe()
@@ -522,9 +519,7 @@ package final class AsyncProcess {
                 } else {
                     let contents = data.withUnsafeBytes { [UInt8]($0) }
                     self.outputRedirection.outputClosures?.stdoutClosure(contents)
-                    stdoutLock.withLock {
-                        stdout += contents
-                    }
+                    stdout.append(contentsOf: contents)
                 }
             }
 
@@ -537,9 +532,7 @@ package final class AsyncProcess {
                 } else {
                     let contents = data.withUnsafeBytes { [UInt8]($0) }
                     self.outputRedirection.outputClosures?.stderrClosure(contents)
-                    stderrLock.withLock {
-                        stderr += contents
-                    }
+                    stderr.append(contentsOf: contents)
                 }
             }
 
@@ -556,7 +549,7 @@ package final class AsyncProcess {
 
         group.notify(queue: self.completionQueue) {
             self.stateLock.withLock {
-                self.state = .outputReady(stdout: .success(stdout), stderr: .success(stderr))
+                self.state = .outputReady(stdout: .success(stdout.get()), stderr: .success(stderr.get()))
             }
             sync.leave()
         }
