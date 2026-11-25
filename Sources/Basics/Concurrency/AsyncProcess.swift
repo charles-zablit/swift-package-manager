@@ -274,15 +274,11 @@ package final class AsyncProcess {
     private static let _loggingHandler = ThreadSafeBox<LoggingHandler?>()
 
     /// Global logging handler. Use with care! preferably use instance level instead of setting one globally.
+    /// `SwiftCommandState` sets it for the whole command.
     package static var loggingHandler: LoggingHandler? {
         get {
             return _loggingHandler.get() ?? nil
         }
-        @available(
-            *,
-            deprecated,
-            message: "use instance level `loggingHandler` passed via `init` instead of setting one globally."
-        )
         set {
             _loggingHandler.put(newValue)
         }
