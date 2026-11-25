@@ -148,6 +148,11 @@ func withSession(
     }
 }
 
+/// Function references are not inferred to be `Sendable`, but this closure is.
+private let inProcessConnectionMode = SWBBuildServiceConnectionMode.inProcessStatic {
+    swiftbuildServiceEntryPoint(inputFD: $0, outputFD: $1, pluginsDirectory: $2, completion: $3)
+}
+
 package func queryBuildCacheInfo(
     casPath: Basics.AbsolutePath,
     pluginPath: Basics.AbsolutePath?,
@@ -158,7 +163,7 @@ package func queryBuildCacheInfo(
     let usingXcodeDeveloperDirectory = (try? toolchainDeveloperPathInfo(toolchain: toolchain))?.isEmbeddedInXcode ?? false
     let pluginEnabled = pluginPath != nil || usingXcodeDeveloperDirectory
 
-    return try await withService(connectionMode: .inProcessStatic(swiftbuildServiceEntryPoint)) { service in
+    return try await withService(connectionMode: inProcessConnectionMode) { service in
         let (session, _) = try await createSession(
             service: service,
             name: "swiftpm-build-cache-info",
@@ -342,7 +347,7 @@ public final class SwiftBuildSystem: SPMBuildCore.BuildSystem {
 
     public func buildProductsPath(for parameters: BuildParameters) async throws -> Basics.AbsolutePath {
         let suffix = try await buildProductsDirectorySuffixCache.value(forKey: parameters.triple.tripleString) {
-            try await withService(connectionMode: .inProcessStatic(swiftbuildServiceEntryPoint)) { service in
+            try await withService(connectionMode: inProcessConnectionMode) { service in
                 var suffix: String?
                 try await withSession(service: service, name: "swiftpm-build-products-path", toolchain: parameters.toolchain, packageManagerResourcesDirectory: self.packageManagerResourcesDirectory) { session, _ in
                     let info = try await session.buildTargetInfo(triple: parameters.triple.tripleString)
@@ -679,7 +684,7 @@ public final class SwiftBuildSystem: SPMBuildCore.BuildSystem {
         var replArguments: CLIArguments?
         var artifacts: [BuildResult.BuiltArtifact]?
         var dependencyGraph: [String: [String]]?
-        return try await withService(connectionMode: .inProcessStatic(swiftbuildServiceEntryPoint)) { service in
+        return try await withService(connectionMode: inProcessConnectionMode) { service in
             let derivedDataPath = self.buildParameters.dataPath
 
             let buildMessageHandler = SwiftBuildSystemMessageHandler(
@@ -1533,7 +1538,7 @@ public final class SwiftBuildSystem: SPMBuildCore.BuildSystem {
     }
 
     package func createLongLivedSession(name: String) async throws -> LongLivedBuildServiceSession {
-        let service = try await SWBBuildService(connectionMode: .inProcessStatic(swiftbuildServiceEntryPoint))
+        let service = try await SWBBuildService(connectionMode: inProcessConnectionMode)
         do {
             let (session, diagnostics) = try await createSession(service: service, name: name, toolchain: buildParameters.toolchain, packageManagerResourcesDirectory: packageManagerResourcesDirectory)
             let teardownHandler = {

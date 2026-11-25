@@ -1079,7 +1079,7 @@ public final class SwiftCommandState {
         )
 
         // register the build system with the cancellation handler
-        self.cancellator.register(name: "build system", handler: buildSystem.cancel)
+        self.cancellator.register(name: "build system", handler: buildSystem)
         return buildSystem
     }
 
