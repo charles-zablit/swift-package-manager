@@ -22,16 +22,15 @@ import protocol TSCBasic.FileSystem
 import func TSCBasic.topologicalSort
 import struct Basics.Environment
 
+import Foundation
+import TSCUtility
+
 #if USE_IMPL_ONLY_IMPORTS
 @_implementationOnly import class DriverSupport.SPMSwiftDriverExecutor
-@_implementationOnly import Foundation
 @_implementationOnly import SwiftDriver
-@_implementationOnly import TSCUtility
 #else
 import class DriverSupport.SPMSwiftDriverExecutor
-import Foundation
 import SwiftDriver
-import TSCUtility
 #endif
 
 import PackageModel

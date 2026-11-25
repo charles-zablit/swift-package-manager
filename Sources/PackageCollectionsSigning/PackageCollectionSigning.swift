@@ -15,15 +15,16 @@ import Basics
 import Dispatch
 import Foundation
 import PackageCollectionsModel
-import SwiftASN1
 
 #if USE_IMPL_ONLY_IMPORTS
 @_implementationOnly import _CryptoExtras
 @_implementationOnly import Crypto
+@_implementationOnly import SwiftASN1
 @_implementationOnly import X509
 #else
 import _CryptoExtras
 import Crypto
+import SwiftASN1
 import X509
 #endif
 
