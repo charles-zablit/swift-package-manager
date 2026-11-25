@@ -106,11 +106,10 @@ internal struct PluginContextDeserializer {
                 }
                 return File(url: path, type: type)
             })
-            target = try SwiftSourceModuleTarget(
+            target = try (DeprecatedTargetFactory() as any ConcreteTargetFactory).swiftSourceModuleTarget(
                 id: String(id),
                 name: wireTarget.name,
                 kind: .init(kind),
-                directory: Path(url: directory),
                 directoryURL: directory,
                 dependencies: dependencies,
                 moduleName: moduleName,
@@ -139,18 +138,16 @@ internal struct PluginContextDeserializer {
                 }
                 return File(url: path, type: type)
             })
-            target = try ClangSourceModuleTarget(
+            target = try (DeprecatedTargetFactory() as any ConcreteTargetFactory).clangSourceModuleTarget(
                 id: String(id),
                 name: wireTarget.name,
                 kind: .init(kind),
-                directory: Path(url: directory),
                 directoryURL: directory,
                 dependencies: dependencies,
                 moduleName: moduleName,
                 sourceFiles: sourceFiles,
                 preprocessorDefinitions: preprocessorDefinitions,
                 headerSearchPaths: headerSearchPaths,
-                publicHeadersDirectory: publicHeadersDir.map { try .init(url: $0) },
                 publicHeadersDirectoryURL: publicHeadersDir,
                 linkedLibraries: linkedLibraries,
                 linkedFrameworks: linkedFrameworks,
@@ -420,5 +417,112 @@ fileprivate extension ModuleKind {
         case .macro:
             self = .macro
         }
+    }
+}
+
+/// Plugins may still cast to the deprecated concrete target types, so they are still created. The deprecation is
+/// meant for the plugins: calling the deprecated witnesses through this protocol does not warn.
+private protocol ConcreteTargetFactory {
+    func swiftSourceModuleTarget(
+        id: String,
+        name: String,
+        kind: ModuleKind,
+        directoryURL: URL,
+        dependencies: [TargetDependency],
+        moduleName: String,
+        sourceFiles: FileList,
+        compilationConditions: [String],
+        linkedLibraries: [String],
+        linkedFrameworks: [String],
+        pluginGeneratedSources: [URL],
+        pluginGeneratedResources: [URL]
+    ) throws -> Target
+
+    func clangSourceModuleTarget(
+        id: String,
+        name: String,
+        kind: ModuleKind,
+        directoryURL: URL,
+        dependencies: [TargetDependency],
+        moduleName: String,
+        sourceFiles: FileList,
+        preprocessorDefinitions: [String],
+        headerSearchPaths: [String],
+        publicHeadersDirectoryURL: URL?,
+        linkedLibraries: [String],
+        linkedFrameworks: [String],
+        pluginGeneratedSources: [URL],
+        pluginGeneratedResources: [URL]
+    ) throws -> Target
+}
+
+private struct DeprecatedTargetFactory: ConcreteTargetFactory {
+    @available(_PackageDescription, deprecated: 6.5)
+    func swiftSourceModuleTarget(
+        id: String,
+        name: String,
+        kind: ModuleKind,
+        directoryURL: URL,
+        dependencies: [TargetDependency],
+        moduleName: String,
+        sourceFiles: FileList,
+        compilationConditions: [String],
+        linkedLibraries: [String],
+        linkedFrameworks: [String],
+        pluginGeneratedSources: [URL],
+        pluginGeneratedResources: [URL]
+    ) throws -> Target {
+        try SwiftSourceModuleTarget(
+            id: id,
+            name: name,
+            kind: kind,
+            directory: Path(url: directoryURL),
+            directoryURL: directoryURL,
+            dependencies: dependencies,
+            moduleName: moduleName,
+            sourceFiles: sourceFiles,
+            compilationConditions: compilationConditions,
+            linkedLibraries: linkedLibraries,
+            linkedFrameworks: linkedFrameworks,
+            pluginGeneratedSources: pluginGeneratedSources,
+            pluginGeneratedResources: pluginGeneratedResources
+        )
+    }
+
+    @available(_PackageDescription, deprecated: 6.5)
+    func clangSourceModuleTarget(
+        id: String,
+        name: String,
+        kind: ModuleKind,
+        directoryURL: URL,
+        dependencies: [TargetDependency],
+        moduleName: String,
+        sourceFiles: FileList,
+        preprocessorDefinitions: [String],
+        headerSearchPaths: [String],
+        publicHeadersDirectoryURL: URL?,
+        linkedLibraries: [String],
+        linkedFrameworks: [String],
+        pluginGeneratedSources: [URL],
+        pluginGeneratedResources: [URL]
+    ) throws -> Target {
+        try ClangSourceModuleTarget(
+            id: id,
+            name: name,
+            kind: kind,
+            directory: Path(url: directoryURL),
+            directoryURL: directoryURL,
+            dependencies: dependencies,
+            moduleName: moduleName,
+            sourceFiles: sourceFiles,
+            preprocessorDefinitions: preprocessorDefinitions,
+            headerSearchPaths: headerSearchPaths,
+            publicHeadersDirectory: publicHeadersDirectoryURL.map { try .init(url: $0) },
+            publicHeadersDirectoryURL: publicHeadersDirectoryURL,
+            linkedLibraries: linkedLibraries,
+            linkedFrameworks: linkedFrameworks,
+            pluginGeneratedSources: pluginGeneratedSources,
+            pluginGeneratedResources: pluginGeneratedResources
+        )
     }
 }
