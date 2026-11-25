@@ -40,13 +40,21 @@ extension SecIdentity: SigningIdentity {}
 // MARK: - SwiftSigningIdentity is created using raw private key and certificate bytes
 
 public struct SwiftSigningIdentity: SigningIdentity {
-    let certificate: Certificate
-    let privateKey: Certificate.PrivateKey
+    /// Type-erased so that the layout of this public type does not depend on X509, which may be imported as
+    /// implementation-only.
+    private let storage: any Sendable
+
+    var certificate: Certificate {
+        (self.storage as! SwiftSigningIdentityStorage).certificate
+    }
+
+    var privateKey: Certificate.PrivateKey {
+        (self.storage as! SwiftSigningIdentityStorage).privateKey
+    }
 
     // for testing
     init(certificate: Certificate, privateKey: Certificate.PrivateKey) {
-        self.certificate = certificate
-        self.privateKey = privateKey
+        self.storage = SwiftSigningIdentityStorage(certificate: certificate, privateKey: privateKey)
     }
 
     public init(
@@ -54,23 +62,35 @@ public struct SwiftSigningIdentity: SigningIdentity {
         derEncodedPrivateKey privateKey: [UInt8],
         privateKeyType: SigningKeyType
     ) throws {
+        let parsedCertificate: Certificate
         do {
-            self.certificate = try Certificate(certificate)
+            parsedCertificate = try Certificate(certificate)
         } catch {
             throw StringError("Invalid certificate: \(error.interpolationDescription)")
         }
 
+        let parsedPrivateKey: Certificate.PrivateKey
         do {
             switch privateKeyType {
             case .p256:
-                self.privateKey = try Certificate.PrivateKey(P256.Signing.PrivateKey(derRepresentation: privateKey))
+                parsedPrivateKey = try Certificate.PrivateKey(P256.Signing.PrivateKey(derRepresentation: privateKey))
             }
         } catch let error as StringError {
             throw error
         } catch {
             throw StringError("Invalid key: \(error.interpolationDescription)")
         }
+
+        self.init(certificate: parsedCertificate, privateKey: parsedPrivateKey)
     }
+}
+
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
+private struct SwiftSigningIdentityStorage: Sendable {
+    let certificate: Certificate
+    let privateKey: Certificate.PrivateKey
 }
 
 // MARK: - SigningIdentity store
