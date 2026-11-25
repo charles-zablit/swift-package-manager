@@ -73,6 +73,9 @@ extension SignatureProviderProtocol {
 }
 
 /// Policy for code signing certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _CodeSigningPolicy: VerifierPolicy {
     let verifyingCriticalExtensions: [ASN1ObjectIdentifier] = [
         ASN1ObjectIdentifier.X509ExtensionID.keyUsage,
@@ -92,6 +95,9 @@ struct _CodeSigningPolicy: VerifierPolicy {
 }
 
 /// Policy for ADP certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _ADPCertificatePolicy: VerifierPolicy {
     /// Include custom marker extensions (which can be critical) so they would not
     /// be considered unhandled and cause certificate chain validation to fail.
@@ -118,6 +124,9 @@ struct _ADPCertificatePolicy: VerifierPolicy {
     }
 }
 
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _OCSPVerifierPolicy: VerifierPolicy {
     private static let cacheTTL: DispatchTimeInterval = .seconds(5 * 60)
     private let cache = ThreadSafeKeyValueStore<
@@ -161,6 +170,9 @@ struct _OCSPVerifierPolicy: VerifierPolicy {
     }
 }
 
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 private struct _OCSPRequester: OCSPRequester {
     let httpClient: HTTPClient
 

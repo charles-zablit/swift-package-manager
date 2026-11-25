@@ -128,6 +128,9 @@ enum CertificatePolicyError: Error, Equatable {
 ///   - The certificate must use either 256-bit EC (recommended) or 2048-bit RSA key.
 ///   - The certificate must not be revoked. The certificate authority must support OCSP.
 ///   - The certificate chain is valid and root certificate must be trusted.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct DefaultCertificatePolicy: CertificatePolicy {
     let trustedRoots: [Certificate]
     let expectedSubjectUserID: String?
@@ -202,6 +205,9 @@ struct DefaultCertificatePolicy: CertificatePolicy {
 ///
 /// This has the same requirements as `DefaultCertificatePolicy` plus additional
 /// marker extensions for Swift Package Collection certifiicates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct ADPSwiftPackageCollectionCertificatePolicy: CertificatePolicy {
     let trustedRoots: [Certificate]
     let expectedSubjectUserID: String?
@@ -278,6 +284,9 @@ struct ADPSwiftPackageCollectionCertificatePolicy: CertificatePolicy {
 ///
 /// This has the same requirements as `DefaultCertificatePolicy` plus additional
 /// marker extensions for Apple Distribution certifiicates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct ADPAppleDistributionCertificatePolicy: CertificatePolicy {
     let trustedRoots: [Certificate]
     let expectedSubjectUserID: String?
@@ -353,6 +362,9 @@ struct ADPAppleDistributionCertificatePolicy: CertificatePolicy {
 // MARK: - Verifier policies
 
 /// Policy for code signing certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _CodeSigningPolicy: VerifierPolicy {
     let verifyingCriticalExtensions: [ASN1ObjectIdentifier] = [
         ASN1ObjectIdentifier.X509ExtensionID.keyUsage,
@@ -371,6 +383,9 @@ struct _CodeSigningPolicy: VerifierPolicy {
 }
 
 /// Policy for revocation check via OCSP.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _OCSPVerifierPolicy: VerifierPolicy {
     let verifyingCriticalExtensions: [ASN1ObjectIdentifier] = []
 
@@ -405,6 +420,9 @@ struct _OCSPVerifierPolicy: VerifierPolicy {
     }
 }
 
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 private struct _OCSPRequester: OCSPRequester {
     let httpClient: HTTPClient
 
@@ -443,6 +461,9 @@ enum SwiftOCSPRequesterError: Error {
 }
 
 /// Policy for matching subject name.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _SubjectNamePolicy: VerifierPolicy {
     let verifyingCriticalExtensions: [ASN1ObjectIdentifier] = []
 
@@ -473,6 +494,9 @@ struct _SubjectNamePolicy: VerifierPolicy {
 }
 
 /// Policy for ADP certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _ADPCertificatePolicy: VerifierPolicy {
     /// Include custom marker extensions (which can be critical) so they would not
     /// be considered unhandled and cause certificate chain validation to fail.
@@ -488,6 +512,9 @@ struct _ADPCertificatePolicy: VerifierPolicy {
 }
 
 /// Policy for ADP Swift Package (Collection) certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _ADPSwiftPackageCertificatePolicy: VerifierPolicy {
     /// Include custom marker extensions (which can be critical) so they would not
     /// be considered unhandled and cause certificate chain validation to fail.
@@ -524,6 +551,9 @@ struct _ADPSwiftPackageCertificatePolicy: VerifierPolicy {
 }
 
 /// Policy for ADP Apple Distribution certificates.
+#if hasFeature(CheckImplementationOnly)
+@_implementationOnly
+#endif
 struct _ADPAppleDistributionCertificatePolicy: VerifierPolicy {
     /// Include custom marker extensions (which can be critical) so they would not
     /// be considered unhandled and cause certificate chain validation to fail.
