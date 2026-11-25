@@ -10,8 +10,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import _Concurrency
-
 /// The build configuration, such as debug or release.
 public struct BuildConfiguration: Sendable {
     /// The configuration of the build. Valid values are `debug` and `release`.
